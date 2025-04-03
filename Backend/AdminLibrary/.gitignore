@@ -1,0 +1,45 @@
+#Estos archivos son generados durante la compilación y no deberían subirse al repositorio.
+
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+
+#Estos archivos contienen configuraciones específicas del usuario y no deben incluirse en el repositorio.
+
+*.user
+*.suo
+*.vs/
+.vscode/
+.idea/
+.ionide/
+
+
+#Los paquetes de NuGet se restauran automáticamente, por lo que no es necesario incluirlos en el control de versiones.
+
+packages/
+*.nupkg
+project.lock.json
+global.json
+.nuget/
+.tools/
+
+#Estos archivos pueden cambiar en cada entorno de trabajo.
+
+*.csproj.user
+*.dbmdl
+*.jfm
+appsettings.Development.json
+
+#Estos archivos se generan al publicar el proyecto.
+
+publish/
+wwwroot/dist/
+wwwroot/node_modules/
+wwwroot/lib/
+
+.suo
+.DocumentLayout.json
+
+\v7
