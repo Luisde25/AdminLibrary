@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace AdminLibrary.Controllers.magazine
+namespace AdminLibrary.Controllers.Roles
 {
-    public class MagazineController : Controller
+    public class RolesController : Controller
     {
         public IActionResult Index()
         {

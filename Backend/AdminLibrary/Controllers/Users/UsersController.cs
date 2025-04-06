@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace AdminLibrary.Controllers.audioVisual
+namespace AdminLibrary.Controllers.Users
 {
-    public class AudiVisualController : Controller
+    public class UsersController : Controller
     {
         public IActionResult Index()
         {
