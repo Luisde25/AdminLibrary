@@ -4,7 +4,7 @@
     {
         public Tid Id { get; set; }
         public DateTime CreateDate { get; set; } = DateTime.Now.AddHours(-5);
-        public string CreateUser { get; set; } = string.Empty;
+        public string CreateUser { get; set; } = "Admin";
         public DateTime? UpdateDate { get; set; }
         public string? UpdateUser { get; set; }
 

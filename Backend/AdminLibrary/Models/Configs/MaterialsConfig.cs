@@ -4,19 +4,23 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AdminLibrary.Models.Configs
 {
-    public class MaterialsConfig : IEntityTypeConfiguration<Materials>
+    public class MaterialsConfig : IEntityTypeConfiguration<MaterialsModel>
     {
-        public void Configure(EntityTypeBuilder<Materials> builder)
+        public void Configure(EntityTypeBuilder<MaterialsModel> builder)
         {
             builder.ToTable("MATERIALS", "masters");
 
             builder.Property(x => x.Id)
-                 .HasColumnType("varchar")
+                 .HasColumnType("int")
                  .HasColumnName("ID_MATERIALS");
 
             builder.Property(x => x.Identifier)
                 .HasColumnType("varchar")
                 .HasColumnName("IDENTIFIER");
+
+            builder.Property(x => x.Title)
+             .HasColumnType("varchar")
+             .HasColumnName("TITLE");
 
             builder.Property(x => x.RegisterDate)
                 .HasColumnType("datetime")
@@ -33,7 +37,7 @@ namespace AdminLibrary.Models.Configs
             Auditory(builder);
         }
 
-        private static void Auditory(EntityTypeBuilder<Materials> builder)
+        private static void Auditory(EntityTypeBuilder<MaterialsModel> builder)
         {
             builder.Property(x => x.CreateDate)
                .HasColumnType("datetime")

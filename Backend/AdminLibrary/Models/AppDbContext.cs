@@ -7,8 +7,8 @@ namespace AdminLibrary.Models
     public class AppDbContext(
         DbContextOptions<AppDbContext> options) : DbContext(options)
     {
-        public DbSet<Materials> Materials { get; set; }
-
+        public DbSet<MaterialsModel> Materials { get; set; }
+        public DbSet<Response> Response { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
