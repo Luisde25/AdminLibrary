@@ -8,6 +8,9 @@ namespace AdminLibrary.Models
         DbContextOptions<AppDbContext> options) : DbContext(options)
     {
         public DbSet<MaterialsModel> Materials { get; set; }
+        public DbSet<Roles> Roles { get; set; }
+        public DbSet<Menus> Menus { get; set; }
+        public DbSet<Users> Users { get; set; }
         public DbSet<Response> Response { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

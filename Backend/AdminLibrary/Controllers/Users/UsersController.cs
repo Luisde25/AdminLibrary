@@ -1,12 +1,39 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AdminLibrary.Dtos;
+using AdminLibrary.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AdminLibrary.Controllers.Users
 {
-    public class UsersController : Controller
+    [ApiController]
+    [Route("api/Users")]
+    public class UsersController(
+         AppDbContext context
+        ) : Controller
     {
-        public IActionResult Index()
+        private readonly AppDbContext _context = context;
+
+        [HttpGet("GetUsers")]
+        public async Task<List<UsersDto>> GetMaterials()
         {
-            return View();
+            var listMenus = await _context.Users.ToListAsync();
+
+            if (listMenus.Count == 0)
+            {
+                return [];
+            }
+
+            return listMenus.Select(m => new UsersDto(
+                                        m.FirtsName,
+                                        m.MiddleName,
+                                        m.FirtsLastName,
+                                        m.SecondLastName,
+                                        m.TypeIdentification,
+                                        m.NumberIdentification,
+                                        m.Status,
+                                        m.UserName,
+                                        m.UserType
+                                    )).ToList();
         }
     }
 }

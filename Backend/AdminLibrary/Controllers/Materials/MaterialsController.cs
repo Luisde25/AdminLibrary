@@ -5,8 +5,6 @@ using AdminLibrary.Models.Entities;
 using AdminLibrary.Models.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System;
 
 namespace AdminLibrary.Controllers.audioVisual
 {
@@ -54,8 +52,8 @@ namespace AdminLibrary.Controllers.audioVisual
                 {
                     var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.requestInvalid);
 
-                    response.Code = success.Code;
-                    response.Message = success.Message;
+                    response.Code = success?.Code ?? string.Empty;
+                    response.Message = success?.Message;
 
                     return response;    
                 }
@@ -66,8 +64,8 @@ namespace AdminLibrary.Controllers.audioVisual
                 {
                     var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.exists);
 
-                    response.Code = success.Code;
-                    response.Message = success.Message;
+                    response.Code = success?.Code ?? string.Empty; 
+                    response.Message = success?.Message;
 
                     return response;
 
@@ -90,22 +88,22 @@ namespace AdminLibrary.Controllers.audioVisual
                 {
                     var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.success);
 
-                    response.Code = success.Code;
-                    response.Message = success.Message;
+                    response.Code = success?.Code ?? string.Empty;
+                    response.Message = success?.Message;
                 }
                 else
                 {
                     var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
-                    response.Code = failed.Code;
-                    response.Message = failed.Message;
+                    response.Code = failed?.Code ?? string.Empty;
+                    response.Message = failed?.Message;
                 }
 
 
             }catch (Exception ex)
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
-                response.Code = failed.Code;
-                response.Message = failed.Message;
+                response.Code = failed?.Code ?? string.Empty;
+                response.Message = failed?.Message;
 
             }
 
@@ -139,28 +137,28 @@ namespace AdminLibrary.Controllers.audioVisual
                     if (result > 0)
                     {
                         var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.success);
-                        response.Code = success.Code;
-                        response.Message = success.Message;
+                        response.Code = success?.Code ?? string.Empty;
+                        response.Message = success?.Message;
                     }
                     else
                     {
                         var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
-                        response.Code = failed.Code;
-                        response.Message = failed.Message;
+                        response.Code = failed?.Code ?? string.Empty;
+                        response.Message = failed?.Message;
                     }
                 }
                 else
                 {
                     var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.updateFailed);
-                    response.Code = failed.Code;
-                    response.Message = failed.Message;
+                    response.Code = failed?.Code ?? string.Empty;
+                    response.Message = failed?.Message;
                 }
             }
             catch (Exception ex)
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
-                response.Code = failed.Code;
-                response.Message = failed.Message;
+                response.Code = failed?.Code ?? string.Empty;
+                response.Message = failed?.Message;
             }
 
             return response;

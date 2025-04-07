@@ -10,6 +10,7 @@ namespace AdminLibrary.Models.Configs
         {
             builder.ToTable("MATERIALS", "masters");
 
+
             builder.Property(x => x.Id)
                  .HasColumnType("int")
                  .HasColumnName("ID_MATERIALS");

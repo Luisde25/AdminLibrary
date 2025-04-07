@@ -27,16 +27,7 @@ namespace AdminLibrary.Models.Entities
         public DateTime RegisterDate { get; set; }
         public int RegisterQuantity { get; set; } 
         public int CurrentQuantity { get; set; }
-
-        public void Cast(ref MaterialsModel model)
-        {
-            model.Identifier = Identifier;
-            model.Title = Title;
-            model.RegisterDate = RegisterDate;
-            model.RegisterQuantity = RegisterQuantity;
-            model.CurrentQuantity = CurrentQuantity;
-
-        }
+        public virtual ICollection<MaterialsMovements> MovementsVirtual { get; set; } = null!;
     }
 
    
