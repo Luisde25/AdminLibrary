@@ -1,25 +1,47 @@
 ﻿namespace AdminLibrary.Dtos
 {
-    public class UsersDto(
+    public class UsersDto
+    {
+
+        public UsersDto()
+        {
+            
+        }
+
+        public UsersDto(
         string firtsName,
         string? middleName,
         string firtsLastName,
         string? secondLastName,
         string typeIdentification,
         string numberIdentification,
-        bool status ,
+        bool status,
         string? userName,
-        string userType
+        string userType,
+        List<string>? rolName
         )
-    {
-        public string FirtsName { get; set; } = firtsName;
-        public string? MiddleName { get; set; } = middleName;
-        public string FirtsLastName { get; set; } = firtsLastName;
-        public string? SecondLastName { get; set; } = secondLastName;
-        public string TypeIdentification { get; set; } = typeIdentification;
-        public string NumberIdentification { get; set; } = numberIdentification;
-        public bool Status { get; set; } = status;  
-        public string? UserName { get; set; } = userName;   
-        public string UserType { get; set; } = userType;
+        {
+            FirtsName = firtsName;
+            MiddleName = middleName;
+            FirtsLastName = firtsLastName;
+            SecondLastName = secondLastName;
+            TypeIdentification = typeIdentification;
+            NumberIdentification = numberIdentification;
+            Status = status;
+            UserName = userName;
+            UserType = userType;
+            RolName = rolName;
+        }
+
+        public string FirtsName { get; set; }
+        public string? MiddleName { get; set; } 
+        public string FirtsLastName { get; set; } 
+        public string? SecondLastName { get; set; }
+        public string TypeIdentification { get; set; } 
+        public string NumberIdentification { get; set; } 
+        public bool Status { get; set; } 
+        public string? UserName { get; set; }    
+        public string UserType { get; set; }
+        public List<string>? RolName { get; set; } 
     }
 }

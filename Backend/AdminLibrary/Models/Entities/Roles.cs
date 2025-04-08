@@ -4,7 +4,18 @@ namespace AdminLibrary.Models.Entities
 {
     public class Roles : EntityBase<int>
     {
-        public string Name { get; set; } = string.Empty;
+        public Roles()
+        {
+            
+        }
+        public Roles(string name, string desciption, bool status)
+        {
+            Name = name;
+            Description = desciption;
+            Status = status;    
+        }
+
+        public string Name { get; set; }
         public string? Description { get; set; } 
         public bool Status { get; set; }
 

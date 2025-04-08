@@ -1,53 +1,54 @@
-﻿using AdminLibrary.Controllers.Materials.request;
+﻿using AdminLibrary.Controllers.MenusModel.request;
 using AdminLibrary.Dtos;
 using AdminLibrary.Models;
 using AdminLibrary.Models.Entities;
 using AdminLibrary.Models.Shared;
+using Ardalis.Specification.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace AdminLibrary.Controllers.audioVisual
+namespace AdminLibrary.Controllers.MenusModel
 {
-
     [ApiController]
-    [Route("api/Materials")]
-    public class MaterialsController(
-            AppDbContext context
-            ) : Controller
+    [Route("api/Menus")]
+    public class MenusController(
+           AppDbContext context
+        ) : Controller
     {
         private readonly AppDbContext _context = context;
 
-
-        [HttpGet("GetMaterials")]
-        public async Task<List<MaterialDto>> GetMaterials()
+        [HttpGet("GetMenus")]
+        public async Task<List<MenusDto>> GetMenus()
         {
-            var listMaterials = await _context.Materials.ToListAsync();
+           
+            var listMenus = await _context.Menus.ToListAsync();
 
-            if (listMaterials.Count == 0)
+            if (listMenus.Count == 0)
             {
                 return [];
             }
 
-            return listMaterials.Select(m => new MaterialDto(
-                                        m.Identifier,
-                                        m.Title,
-                                        m.RegisterDate.ToString("yyyyMMdd HH:mm:ss"),
-                                        m.RegisterQuantity,
-                                        m.CurrentQuantity
+            return listMenus.Select(m => new MenusDto(
+                                        m.Name,
+                                        m.Url,
+                                        m.Father,
+                                        m.Order,
+                                        m.Status
                                     )).ToList();
+            
         }
 
-        [HttpPost("Register")]
-        public async Task<ResponseDto> CreateMaterial(
-            MaterialControllerRequest materialControllerRequest
-            )
+        [HttpPost("Create")]
+        public async Task<ResponseDto> CreateMenu(
+         MenuControllerRequest menuControllerRequest
+         )
         {
             ResponseDto response = new();
             try
             {
-                if (string.IsNullOrEmpty(materialControllerRequest.Identifier) || 
-                    string.IsNullOrEmpty(materialControllerRequest.Title) || 
-                    materialControllerRequest.RegisterQuantity <= 0 
+                if (string.IsNullOrEmpty(menuControllerRequest.Name) ||
+                    string.IsNullOrEmpty(menuControllerRequest.Url) ||
+                    menuControllerRequest.Order > 0
                     )
                 {
                     var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.requestInvalid);
@@ -55,46 +56,30 @@ namespace AdminLibrary.Controllers.audioVisual
                     response.Code = success?.Code ?? string.Empty;
                     response.Message = success?.Message;
 
-                    return response;    
+                    return response;
                 }
 
-                var isExist = await _context.Materials.FirstOrDefaultAsync(x => x.Identifier == materialControllerRequest.Identifier);
+                var isExist = await _context.Menus.FirstOrDefaultAsync(x => x.Url == menuControllerRequest.Url);
 
-                if (isExist != null) 
+                if (isExist != null)
                 {
                     var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.exists);
 
-                    response.Code = success?.Code ?? string.Empty; 
+                    response.Code = success?.Code ?? string.Empty;
                     response.Message = success?.Message;
 
                     return response;
 
                 }
 
-                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(Constants.utcNow, Constants.timeZoneInfo);
-                var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName.ToLower() == materialControllerRequest.UserName!.ToLower());
+                var menus = new Menus(menuControllerRequest.Name!,
+                                      menuControllerRequest.Url,
+                                      menuControllerRequest.Father,
+                                      menuControllerRequest.Order,
+                                      menuControllerRequest.Status
+                                      );
 
-                var material = new MaterialsModel(
-                    materialControllerRequest.Identifier,
-                    materialControllerRequest.Title,
-                    localTime,
-                    materialControllerRequest.RegisterQuantity,
-                    materialControllerRequest.RegisterQuantity
-                    )
-                {
-                    MovementsVirtual =
-                                        [
-                                            new MaterialsMovements
-                                            {
-                                                MovementType = "REGISTRO",
-                                                Observations = materialControllerRequest.Observacion,
-                                                MovementDate = localTime,
-                                                UserId = user != null ? user.Id : 0
-                                            }
-                                        ]
-                };
-
-                await _context.Materials.AddAsync(material);
+                await _context.Menus.AddAsync(menus);
                 var result = await _context.SaveChangesAsync();
 
                 if (result > 0)
@@ -112,40 +97,41 @@ namespace AdminLibrary.Controllers.audioVisual
                 }
 
 
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
                 response.Code = failed?.Code ?? string.Empty;
                 response.Message = failed?.Message;
 
             }
-
-
             return response;
         }
 
-
         [HttpPut("Update")]
-        public async Task<ResponseDto> UpdateMaterial(
-            MaterialControllerUpdate materialControllerRequest
-            )
+        public async Task<ResponseDto> UpdateMenu(
+          MenuControllerUpdate menuControllerUpdate
+          )
         {
             ResponseDto response = new();
             try
             {
                 DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(Constants.utcNow, Constants.timeZoneInfo);
 
-                var isExist = await _context.Materials.FirstOrDefaultAsync(x => x.Identifier == materialControllerRequest.Identifier);
+                var isExist = await _context.Menus.FirstOrDefaultAsync(x => x.Id == menuControllerUpdate.Id);
 
                 if (isExist != null)
                 {
-                    isExist.Title = materialControllerRequest.Title;
-                    isExist.RegisterQuantity = materialControllerRequest.RegisterQuantity;
-                    isExist.CurrentQuantity = materialControllerRequest.CurrentQuantity;
+                    isExist.Name = menuControllerUpdate.Name!;
+                    isExist.Url = menuControllerUpdate.Url!;
+                    isExist.Father = menuControllerUpdate.Father!;
+                    isExist.Order = menuControllerUpdate.Order!;
+                    isExist.Status = menuControllerUpdate.Status!;
+               
                     isExist.UpdateDate = localTime;
                     isExist.UpdateUser = "User";
 
-                    _context.Materials.Update(isExist);
+                    _context.Menus.Update(isExist);
                     var result = await _context.SaveChangesAsync();
                     if (result > 0)
                     {
@@ -176,8 +162,5 @@ namespace AdminLibrary.Controllers.audioVisual
 
             return response;
         }
-
-
-
     }
 }

@@ -42,6 +42,9 @@ namespace AdminLibrary.Models.Configs
         {
             builder.Property(x => x.CreateDate)
                .HasColumnType("datetime")
+
+
+
                 .HasColumnName("CREATE_DATE");
 
             builder.Property(x => x.CreateUser)

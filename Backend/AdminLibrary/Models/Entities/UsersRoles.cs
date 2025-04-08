@@ -4,6 +4,10 @@ namespace AdminLibrary.Models.Entities
 {
     public class UsersRoles : EntityBase<int>
     {
+        public UsersRoles()
+        {
+            
+        }
         public int IdUser { get; set; }
         public int IdRol { get; set; }
         public bool Status { get; set; }

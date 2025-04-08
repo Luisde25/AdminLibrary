@@ -1,4 +1,5 @@
 ﻿using AdminLibrary.Controllers.Materials.request;
+using AdminLibrary.Controllers.RolesModel.request;
 using AdminLibrary.Dtos;
 using AdminLibrary.Models;
 using AdminLibrary.Models.Entities;
@@ -6,95 +7,71 @@ using AdminLibrary.Models.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace AdminLibrary.Controllers.audioVisual
+namespace AdminLibrary.Controllers.RolesModel
 {
-
     [ApiController]
-    [Route("api/Materials")]
-    public class MaterialsController(
-            AppDbContext context
-            ) : Controller
+    [Route("api/Roles")]
+    public class RolesController(
+         AppDbContext context
+        ) : Controller
     {
         private readonly AppDbContext _context = context;
-
-
-        [HttpGet("GetMaterials")]
-        public async Task<List<MaterialDto>> GetMaterials()
+       
+        [HttpGet("GetRoles")]
+        public async Task<List<RolesDto>> GetMaterials()
         {
-            var listMaterials = await _context.Materials.ToListAsync();
+            var listMenus = await _context.Roles.ToListAsync();
 
-            if (listMaterials.Count == 0)
+            if (listMenus.Count == 0)
             {
                 return [];
             }
 
-            return listMaterials.Select(m => new MaterialDto(
-                                        m.Identifier,
-                                        m.Title,
-                                        m.RegisterDate.ToString("yyyyMMdd HH:mm:ss"),
-                                        m.RegisterQuantity,
-                                        m.CurrentQuantity
+            return listMenus.Select(m => new RolesDto(
+                                        m.Name,
+                                        m.Description,
+                                        m.Status
                                     )).ToList();
         }
 
-        [HttpPost("Register")]
-        public async Task<ResponseDto> CreateMaterial(
-            MaterialControllerRequest materialControllerRequest
+
+        [HttpPost("Create")]
+        public async Task<ResponseDto> CreateRole(
+            RoleControllerRequest roleControllerRequest
             )
         {
             ResponseDto response = new();
             try
             {
-                if (string.IsNullOrEmpty(materialControllerRequest.Identifier) || 
-                    string.IsNullOrEmpty(materialControllerRequest.Title) || 
-                    materialControllerRequest.RegisterQuantity <= 0 
-                    )
+                if (string.IsNullOrEmpty(roleControllerRequest.Name) ||
+                    string.IsNullOrEmpty(roleControllerRequest.Description))
                 {
                     var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.requestInvalid);
 
                     response.Code = success?.Code ?? string.Empty;
                     response.Message = success?.Message;
 
-                    return response;    
+                    return response;
                 }
 
-                var isExist = await _context.Materials.FirstOrDefaultAsync(x => x.Identifier == materialControllerRequest.Identifier);
+                var isExist = await _context.Roles.FirstOrDefaultAsync(x => x.Name == roleControllerRequest.Name);
 
-                if (isExist != null) 
+                if (isExist != null)
                 {
                     var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.exists);
 
-                    response.Code = success?.Code ?? string.Empty; 
+                    response.Code = success?.Code ?? string.Empty;
                     response.Message = success?.Message;
 
                     return response;
 
                 }
 
-                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(Constants.utcNow, Constants.timeZoneInfo);
-                var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName.ToLower() == materialControllerRequest.UserName!.ToLower());
+                var roles = new Roles(roleControllerRequest.Name,
+                                      roleControllerRequest.Description,
+                                      roleControllerRequest.status);
 
-                var material = new MaterialsModel(
-                    materialControllerRequest.Identifier,
-                    materialControllerRequest.Title,
-                    localTime,
-                    materialControllerRequest.RegisterQuantity,
-                    materialControllerRequest.RegisterQuantity
-                    )
-                {
-                    MovementsVirtual =
-                                        [
-                                            new MaterialsMovements
-                                            {
-                                                MovementType = "REGISTRO",
-                                                Observations = materialControllerRequest.Observacion,
-                                                MovementDate = localTime,
-                                                UserId = user != null ? user.Id : 0
-                                            }
-                                        ]
-                };
-
-                await _context.Materials.AddAsync(material);
+                await _context.Roles.AddAsync(roles);
                 var result = await _context.SaveChangesAsync();
 
                 if (result > 0)
@@ -112,40 +89,38 @@ namespace AdminLibrary.Controllers.audioVisual
                 }
 
 
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
                 response.Code = failed?.Code ?? string.Empty;
                 response.Message = failed?.Message;
 
             }
-
-
             return response;
         }
 
-
         [HttpPut("Update")]
         public async Task<ResponseDto> UpdateMaterial(
-            MaterialControllerUpdate materialControllerRequest
-            )
+          RoleControllerRequestUpdate roleControllerRequest
+          )
         {
             ResponseDto response = new();
             try
             {
                 DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(Constants.utcNow, Constants.timeZoneInfo);
 
-                var isExist = await _context.Materials.FirstOrDefaultAsync(x => x.Identifier == materialControllerRequest.Identifier);
+                var isExist = await _context.Roles.FirstOrDefaultAsync(x => x.Id == roleControllerRequest.Id);
 
                 if (isExist != null)
                 {
-                    isExist.Title = materialControllerRequest.Title;
-                    isExist.RegisterQuantity = materialControllerRequest.RegisterQuantity;
-                    isExist.CurrentQuantity = materialControllerRequest.CurrentQuantity;
+                    isExist.Name = roleControllerRequest.Name;
+                    isExist.Description = roleControllerRequest.Description;
+                    isExist.Status = roleControllerRequest.status;
                     isExist.UpdateDate = localTime;
                     isExist.UpdateUser = "User";
 
-                    _context.Materials.Update(isExist);
+                    _context.Roles.Update(isExist);
                     var result = await _context.SaveChangesAsync();
                     if (result > 0)
                     {
@@ -176,7 +151,6 @@ namespace AdminLibrary.Controllers.audioVisual
 
             return response;
         }
-
 
 
     }
