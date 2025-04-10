@@ -28,7 +28,7 @@ namespace AdminLibrary.Controllers.UsersModel
                 return [];
             }
 
-            return listUsers.Select(m => new UsersDto(
+            var Users = listUsers.Select(m => new UsersDto(
                                         m.FirtsName,
                                         m.MiddleName,
                                         m.FirtsLastName,
@@ -38,8 +38,11 @@ namespace AdminLibrary.Controllers.UsersModel
                                         m.Status,
                                         m.UserName,
                                         m.UserType,
-                                        m.UsersRolesVirtual?.Select(x => x.RolesVirtual.Name).ToList() ?? []
-                                    )).ToList();
+                                        m.UsersRolesVirtual?.FirstOrDefault()?.RolesVirtual.Name ?? string.Empty
+                                    ));
+
+
+            return Users.Where(x => !string.IsNullOrEmpty(x.RolName)).ToList();
         }
 
         [HttpPost("Create")]
@@ -80,7 +83,7 @@ namespace AdminLibrary.Controllers.UsersModel
                 var users = new Users(userControllerRequest.FirtsName!,
                                       userControllerRequest.MiddleName,
                                       userControllerRequest.FirtsLastName,
-                                      userControllerRequest.SecondLastName,
+                                      userControllerRequest.SecondLastName ?? string.Empty,
                                       userControllerRequest.TypeIdentification,
                                       userControllerRequest.NumberIdentification,
                                       userControllerRequest.Status,
@@ -91,15 +94,14 @@ namespace AdminLibrary.Controllers.UsersModel
                 await _context.Users.AddAsync(users);
                 var result = await _context.SaveChangesAsync();
 
-                if (userControllerRequest.Roles != null)
+                if (userControllerRequest.Rol != 0)
                 {
-                    var roleEntities = await _context.Roles.Where(r => userControllerRequest.Roles.ToLower().Contains(r.Name.ToLower()))
-                                                          .ToListAsync();
+                    var roleEntities = await _context.Roles.ToListAsync();
 
                     var roleAssignments = roleEntities.Select(role => new UsersRoles
                     {
                         IdUser = users.Id,
-                        IdRol = role.Id
+                        IdRol = userControllerRequest.Rol
                     }).ToList();
 
                     await _context.UsersRoles.AddRangeAsync(roleAssignments);
@@ -133,7 +135,7 @@ namespace AdminLibrary.Controllers.UsersModel
         }
 
         [HttpPut("Update")]
-        public async Task<ResponseDto> UpdateMaterial(
+        public async Task<ResponseDto> UpdateUser(
           UserControllerUpdate userControllerUpdate
           )
         {
@@ -143,9 +145,12 @@ namespace AdminLibrary.Controllers.UsersModel
                 DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(Constants.utcNow, Constants.timeZoneInfo);
 
                 var isExist = await _context.Users.FirstOrDefaultAsync(x => x.Id == userControllerUpdate.Id);
+                var roleEntities = await _context.UsersRoles.FirstOrDefaultAsync(x => x.IdRol == userControllerUpdate.Rol);
 
-                if (isExist != null)
+                if (isExist != null && roleEntities != null)
                 {
+
+
                     isExist.FirtsName = userControllerUpdate.FirtsName!;
                     isExist.MiddleName = userControllerUpdate.MiddleName!;
                     isExist.FirtsLastName = userControllerUpdate.FirtsLastName!;
@@ -154,12 +159,16 @@ namespace AdminLibrary.Controllers.UsersModel
                     isExist.NumberIdentification = userControllerUpdate.NumberIdentification!;
                     isExist.Status = userControllerUpdate.Status;
                     isExist.UserName = userControllerUpdate.UserName!;
-                    
+                    roleEntities.IdRol = userControllerUpdate.Rol;
                     isExist.UpdateDate = localTime;
                     isExist.UpdateUser = "User";
 
                     _context.Users.Update(isExist);
                     var result = await _context.SaveChangesAsync();
+
+                    _context.UsersRoles.Update(roleEntities);
+                    await _context.SaveChangesAsync();
+
                     if (result > 0)
                     {
                         var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.success);
@@ -179,6 +188,54 @@ namespace AdminLibrary.Controllers.UsersModel
                     response.Code = failed?.Code ?? string.Empty;
                     response.Message = failed?.Message;
                 }
+            }
+            catch (Exception ex)
+            {
+                var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
+                response.Code = failed?.Code ?? string.Empty;
+                response.Message = failed?.Message;
+            }
+
+            return response;
+        }
+
+        [HttpDelete("Remove")]
+        public async Task<ResponseDto> DeleteUser( int id
+       )
+        {
+            ResponseDto response = new();
+            try
+            {
+              var user = await _context.Users.FirstOrDefaultAsync(r => r.Id == id);
+
+                if (user != null)
+                {
+                    
+                    var loans = _context.Movements.Where(r => r.UserId == id).ToList();
+
+                    if (loans.Count > 0)
+                    {
+                        var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.UserNoDelete);
+                        response.Code = failed?.Code ?? string.Empty;
+                        response.Message = failed?.Message;
+
+                        return response;
+                    }
+
+                    _context.Users.Remove(user); 
+                    await _context.SaveChangesAsync();
+
+                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.DeleteSuccess);
+                    response.Code = success?.Code ?? string.Empty;
+                    response.Message = success?.Message;
+                }
+                else
+                {
+                    var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.MaterialNoFound);
+                    response.Code = failed?.Code ?? string.Empty;
+                    response.Message = failed?.Message;
+                }
+
             }
             catch (Exception ex)
             {

@@ -22,8 +22,8 @@ namespace AdminLibrary.Controllers.UsersModel.request
         public string? UserName { get; set; }
         [JsonPropertyName("userType")]
         public string? UserType { get; set; }
-        [JsonPropertyName("roles")]
-        public string? Roles { get; set; }
+        [JsonPropertyName("rol")]
+        public int Rol { get; set; }
 
     }
 
@@ -49,6 +49,7 @@ namespace AdminLibrary.Controllers.UsersModel.request
         public string? UserName { get; set; }
         [JsonPropertyName("userType")]
         public string? UserType { get; set; }
-
+        [JsonPropertyName("rol")]
+        public int Rol { get; set; }
     }
 }

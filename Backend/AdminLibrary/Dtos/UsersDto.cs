@@ -18,7 +18,7 @@
         bool status,
         string? userName,
         string userType,
-        List<string>? rolName
+        string? rolName
         )
         {
             FirtsName = firtsName;
@@ -30,7 +30,7 @@
             Status = status;
             UserName = userName;
             UserType = userType;
-            RolName = rolName;
+            RolName = rolName ?? string.Empty;
         }
 
         public string FirtsName { get; set; }
@@ -42,6 +42,6 @@
         public bool Status { get; set; } 
         public string? UserName { get; set; }    
         public string UserType { get; set; }
-        public List<string>? RolName { get; set; } 
+        public string RolName { get; set; } 
     }
 }

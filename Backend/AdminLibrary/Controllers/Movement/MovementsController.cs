@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AdminLibrary.Controllers.Movement
 {
     [ApiController]
-    [Route("api/Movements")]
+    [Route("api/Materials")]
     public class MovementsController(
          AppDbContext context
 
@@ -19,7 +19,7 @@ namespace AdminLibrary.Controllers.Movement
     {
         private readonly AppDbContext _context = context;
 
-        [HttpGet("GetMovements")]
+        [HttpGet("GetLoans")]
         public async Task<List<MovementsDto>> GetMovements()
         {
             var listMovements = await (from m in _context.Movements
@@ -41,7 +41,7 @@ namespace AdminLibrary.Controllers.Movement
             return listMovements;
         }
 
-        [HttpPost("movements")]
+        [HttpPost("Loans")]
         public async Task<ResponseDto> Movements(
             MovementsControllerRequest movementsControllerRequest
             )
@@ -85,6 +85,65 @@ namespace AdminLibrary.Controllers.Movement
                 return response;
             }
 
+            var listMovements = await (from m in _context.Movements
+                                       join u in _context.Users on m.UserId equals u.Id
+                                       join mt in _context.Materials on m.MaterialsId equals mt.Id
+                                       where m.MovementType == "prestamo" && u.Id == user.Id
+                                       select m).ToListAsync();
+           
+            if (listMovements.Select(x => x.MaterialsId).Count() > material.CurrentQuantity )
+            {
+                var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.LimitMaterial);
+
+                response.Code = success?.Code ?? string.Empty;
+                response.Message = success?.Message;
+
+                return response;
+            }
+
+
+            if (movementsControllerRequest.MovementType.ToLower() == "prestamo" && user.UserType.ToLower() == "estudiante")
+            {
+               
+                if (listMovements.Select(x => x.UserId).Count() > 5)
+                {
+                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.MaxEstudents);
+
+                    response.Code = success?.Code ?? string.Empty;
+                    response.Message = success?.Message;
+
+                    return response;
+                }
+
+            }
+            else if (movementsControllerRequest.MovementType.ToLower() == "prestamo" && user.UserType.ToLower() == "academico")
+            {
+
+                if (listMovements.Select(x => x.UserId).Count() > 1)
+                {
+                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.MaxProf);
+
+                    response.Code = success?.Code ?? string.Empty;
+                    response.Message = success?.Message;
+
+                    return response;
+                }
+            }
+            else if (movementsControllerRequest.MovementType.ToLower() == "prestamo" && user.UserType.ToLower() == "profesor")
+            {
+
+
+                if (listMovements.Select(x => x.UserId).Count() > 3)
+                {
+                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.MaxAdmin);
+
+                    response.Code = success?.Code ?? string.Empty;
+                    response.Message = success?.Message;
+                      
+                   return response;
+
+                }
+            }
 
             var movimiento = new MaterialsMovements
             {
@@ -113,6 +172,67 @@ namespace AdminLibrary.Controllers.Movement
             }
 
             return response;
+        }
+
+
+        [HttpDelete("return")]
+        public async Task<ResponseDto> DeleteLoans(
+            MovementsControllerRequest movementsControllerRequest
+            )
+        {
+            ResponseDto response = new();
+            DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(Constants.utcNow, Constants.timeZoneInfo);
+
+            if (string.IsNullOrEmpty(movementsControllerRequest.UserName) && string.IsNullOrEmpty(movementsControllerRequest.Identifier))
+            {
+                var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.requestInvalid);
+
+                response.Code = success?.Code ?? string.Empty;
+                response.Message = success?.Message;
+
+                return response;
+            }
+
+            var user = await _context.Users
+            .FirstOrDefaultAsync(m => m.UserName!.ToLower() == movementsControllerRequest.UserName!.ToLower());
+
+             var material = await _context.Materials
+                 .FirstOrDefaultAsync(m => m.Identifier == movementsControllerRequest.Identifier);
+
+
+            if (user != null && material != null)
+            {
+                var deleteMovement = await _context.Movements.FirstOrDefaultAsync(x => x.UserId == user.Id && x.MaterialsId == material.Id);
+
+                if (deleteMovement != null)
+                {
+                     _context.Movements.Remove(deleteMovement);
+                    await _context.SaveChangesAsync();
+
+                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.DeleteSuccess);
+
+                    response.Code = success?.Code ?? string.Empty;
+                    response.Message = success?.Message;
+                }
+                else
+                {
+                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.MaterialNoFound);
+
+                    response.Code = success?.Code ?? string.Empty;
+                    response.Message = success?.Message;
+                }
+
+            }
+            else
+            {
+                var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.MaterialNoFound);
+
+                response.Code = success?.Code ?? string.Empty;
+                response.Message = success?.Message;
+            }
+
+            return response;
+
         }
 
     }
