@@ -46,6 +46,6 @@ namespace AdminLibrary.Models.Entities
         /// </summary>
         public virtual ICollection<UsersRoles> UsersRolesVirtual { get; set; } = null!;
         public virtual ICollection<MaterialsMovements> MovementsVirtual { get; set; } = null!;
-        public virtual ICollection<MaterialHistory> MaterialHistory { get; set; } = null!;
+        public virtual ICollection<MaterialHistory> HistoryVirtual { get; set; } = null!;
     }
 }

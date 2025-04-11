@@ -9,6 +9,7 @@
         }
 
         public UsersDto(
+        int id,
         string firtsName,
         string? middleName,
         string firtsLastName,
@@ -21,6 +22,7 @@
         string? rolName
         )
         {
+            Id = id;    
             FirtsName = firtsName;
             MiddleName = middleName;
             FirtsLastName = firtsLastName;
@@ -33,6 +35,7 @@
             RolName = rolName ?? string.Empty;
         }
 
+        public int Id { get; set; }
         public string FirtsName { get; set; }
         public string? MiddleName { get; set; } 
         public string FirtsLastName { get; set; } 

@@ -1,8 +1,8 @@
-﻿using AdminLibrary.Controllers.MenusModel.request;
+﻿using AdminLibrary.Constants;
+using AdminLibrary.Controllers.MenusModel.request;
 using AdminLibrary.Dtos;
 using AdminLibrary.Models;
 using AdminLibrary.Models.Entities;
-using AdminLibrary.Models.Shared;
 using Ardalis.Specification.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -63,7 +63,7 @@ namespace AdminLibrary.Controllers.MenusModel
 
                 if (isExist != null)
                 {
-                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.exists);
+                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.ExistMaterial);
 
                     response.Code = success?.Code ?? string.Empty;
                     response.Message = success?.Message;
@@ -102,7 +102,7 @@ namespace AdminLibrary.Controllers.MenusModel
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
                 response.Code = failed?.Code ?? string.Empty;
-                response.Message = failed?.Message;
+                response.Message = failed?.Message + ex.Message;
 
             }
             return response;
@@ -116,7 +116,7 @@ namespace AdminLibrary.Controllers.MenusModel
             ResponseDto response = new();
             try
             {
-                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(Constants.utcNow, Constants.timeZoneInfo);
+                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(ConstantsApi.utcNow, ConstantsApi.timeZoneInfo);
 
                 var isExist = await _context.Menus.FirstOrDefaultAsync(x => x.Id == menuControllerUpdate.Id);
 
@@ -157,7 +157,7 @@ namespace AdminLibrary.Controllers.MenusModel
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
                 response.Code = failed?.Code ?? string.Empty;
-                response.Message = failed?.Message;
+                response.Message = failed?.Message + ex.Message;
             }
 
             return response;

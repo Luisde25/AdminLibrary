@@ -1,4 +1,5 @@
-﻿using AdminLibrary.Controllers.Materials.request;
+﻿using AdminLibrary.Constants;
+using AdminLibrary.Controllers.Materials.request;
 using AdminLibrary.Dtos;
 using AdminLibrary.Models;
 using AdminLibrary.Models.Entities;
@@ -17,7 +18,7 @@ namespace AdminLibrary.Controllers.audioVisual
     {
         private readonly AppDbContext _context = context;
 
-
+        #region Lista de materiales
         [HttpGet("GetMaterials")]
         public async Task<List<MaterialDto>> GetMaterials()
         {
@@ -29,6 +30,7 @@ namespace AdminLibrary.Controllers.audioVisual
             }
 
             return listMaterials.Select(m => new MaterialDto(
+                                        m.Id,
                                         m.Identifier,
                                         m.Title,
                                         m.RegisterDate.ToString("yyyyMMdd HH:mm:ss"),
@@ -36,7 +38,9 @@ namespace AdminLibrary.Controllers.audioVisual
                                         m.CurrentQuantity
                                     )).ToList();
         }
+        #endregion
 
+        #region Registrar un nuevo libro
         [HttpPost("Register")]
         public async Task<ResponseDto> CreateMaterial(
             MaterialControllerRequest materialControllerRequest
@@ -62,7 +66,7 @@ namespace AdminLibrary.Controllers.audioVisual
 
                 if (isExist != null) 
                 {
-                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.exists);
+                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.ExistMaterial);
 
                     response.Code = success?.Code ?? string.Empty; 
                     response.Message = success?.Message;
@@ -71,8 +75,19 @@ namespace AdminLibrary.Controllers.audioVisual
 
                 }
 
-                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(Constants.utcNow, Constants.timeZoneInfo);
-                var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName.ToLower() == materialControllerRequest.UserName!.ToLower());
+                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(ConstantsApi.utcNow, ConstantsApi.timeZoneInfo);
+                var user = await _context.Users.FirstOrDefaultAsync(x => x.Id== materialControllerRequest.userId);
+
+                if (user == null)
+                {
+                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.UserNoFound);
+
+                    response.Code = success?.Code ?? string.Empty;
+                    response.Message = success?.Message;
+
+                    return response;
+                }
+
 
                 var material = new MaterialsModel(
                     materialControllerRequest.Identifier,
@@ -86,16 +101,26 @@ namespace AdminLibrary.Controllers.audioVisual
                                         [
                                             new MaterialsMovements
                                             {
-                                                MovementType = "REGISTRO",
+                                                MovementType = ConstantsApi.Register,
                                                 Observations = materialControllerRequest.Observacion,
                                                 MovementDate = localTime,
-                                                UserId = user != null ? user.Id : 0
+                                                UserId =materialControllerRequest.userId
                                             }
                                         ]
                 };
 
                 await _context.Materials.AddAsync(material);
                 var result = await _context.SaveChangesAsync();
+
+                var historyMaterial = new MaterialHistory(material.Id,
+                                                        materialControllerRequest.userId,
+                                                        ConstantsApi.Message,
+                                                         ConstantsApi.Register, 
+                                                        localTime 
+                                                    );
+
+                await _context.History.AddAsync(historyMaterial);
+                await _context.SaveChangesAsync();
 
                 if (result > 0)
                 {
@@ -116,15 +141,15 @@ namespace AdminLibrary.Controllers.audioVisual
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
                 response.Code = failed?.Code ?? string.Empty;
-                response.Message = failed?.Message;
+                response.Message = failed?.Message + ex.Message;
 
             }
 
-
             return response;
         }
+        #endregion
 
-
+        #region Actualizar libro existente
         [HttpPut("Update")]
         public async Task<ResponseDto> UpdateMaterial(
             MaterialControllerUpdate materialControllerRequest
@@ -133,9 +158,9 @@ namespace AdminLibrary.Controllers.audioVisual
             ResponseDto response = new();
             try
             {
-                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(Constants.utcNow, Constants.timeZoneInfo);
+                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(ConstantsApi.utcNow, ConstantsApi.timeZoneInfo);
 
-                var isExist = await _context.Materials.FirstOrDefaultAsync(x => x.Identifier == materialControllerRequest.Identifier);
+                var isExist = await _context.Materials.FirstOrDefaultAsync(x => x.Id == materialControllerRequest.Id);
 
                 if (isExist != null)
                 {
@@ -143,7 +168,7 @@ namespace AdminLibrary.Controllers.audioVisual
                     isExist.RegisterQuantity = materialControllerRequest.RegisterQuantity;
                     isExist.CurrentQuantity = materialControllerRequest.CurrentQuantity;
                     isExist.UpdateDate = localTime;
-                    isExist.UpdateUser = "User";
+                    isExist.UpdateUser = "Admin";
 
                     _context.Materials.Update(isExist);
                     var result = await _context.SaveChangesAsync();
@@ -171,13 +196,11 @@ namespace AdminLibrary.Controllers.audioVisual
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
                 response.Code = failed?.Code ?? string.Empty;
-                response.Message = failed?.Message;
+                response.Message = failed?.Message + ex.Message;
             }
 
             return response;
         }
-
-
-
+        #endregion
     }
 }

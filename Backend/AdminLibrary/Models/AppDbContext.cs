@@ -13,6 +13,7 @@ namespace AdminLibrary.Models
         public DbSet<Users> Users { get; set; }
         public DbSet<UsersRoles> UsersRoles { get; set; }
         public DbSet<MaterialsMovements> Movements { get; set; }
+        public DbSet<MaterialHistory> History { get; set; }
         public DbSet<Response> Response { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

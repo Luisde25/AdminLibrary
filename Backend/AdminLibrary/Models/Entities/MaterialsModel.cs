@@ -28,7 +28,7 @@ namespace AdminLibrary.Models.Entities
         public int RegisterQuantity { get; set; } 
         public int CurrentQuantity { get; set; }
         public virtual ICollection<MaterialsMovements> MovementsVirtual { get; set; } = null!;
-        public virtual ICollection<MaterialHistory> MaterialHistory { get; set; } = null!;
+        public virtual ICollection<MaterialHistory> HistoryVirtual { get; set; } = null!;
 
     }
 

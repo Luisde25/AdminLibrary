@@ -13,12 +13,14 @@ namespace AdminLibrary.Controllers.Materials.request
 
         [JsonPropertyName("observations")]
         public string? Observacion { get; set; }
-        [JsonPropertyName("userName")]
-        public string? UserName { get; set; }
+        [JsonPropertyName("userId")]
+        public int userId { get; set; }
     }
 
     public class MaterialControllerUpdate
     {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
         [JsonPropertyName("references")]
         public string Identifier { get; set; } = string.Empty;
         [JsonPropertyName("title")]
@@ -30,9 +32,6 @@ namespace AdminLibrary.Controllers.Materials.request
 
         [JsonPropertyName("observations")]
         public string? Observacion { get; set; }
-        [JsonPropertyName("userName")]
-        public string? UserName { get; set; }
-
         
     }
 

@@ -8,23 +8,23 @@ namespace AdminLibrary.Models.Configs
     {
         public void Configure(EntityTypeBuilder<MaterialHistory> builder)
         {
-            builder.ToTable("MATERIALS_MOVEMENTS", "masters");
+            builder.ToTable("MATERIALS_HISTORY", "masters");
 
-            builder.HasOne(x => x.MaterialsVirtual).WithMany(y => y.MaterialHistory)
+            builder.HasOne(x => x.MaterialsVirtual).WithMany(y => y.HistoryVirtual)
                 .HasForeignKey(x => x.MaterialsId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(x => x.UserVirtual).WithMany(y => y.MaterialHistory)
+            builder.HasOne(x => x.UserVirtual).WithMany(y => y.HistoryVirtual)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Property(x => x.Id)
                 .HasColumnType("int")
-                .HasColumnName("ID_MOVEMENT");
+                .HasColumnName("ID_HISTORY");
 
             builder.Property(x => x.MaterialsId)
                 .HasColumnType("int")
-                .HasColumnName("ID_MATERIALS");
+                .HasColumnName("ID_MATERIAL");
 
             builder.Property(x => x.UserId)
                 .HasColumnType("int")

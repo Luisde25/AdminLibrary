@@ -22,7 +22,7 @@ namespace AdminLibrary.Controllers.UsersModel.request
         public string? UserName { get; set; }
         [JsonPropertyName("userType")]
         public string? UserType { get; set; }
-        [JsonPropertyName("rol")]
+        [JsonPropertyName("rolId")]
         public int Rol { get; set; }
 
     }
@@ -49,7 +49,7 @@ namespace AdminLibrary.Controllers.UsersModel.request
         public string? UserName { get; set; }
         [JsonPropertyName("userType")]
         public string? UserType { get; set; }
-        [JsonPropertyName("rol")]
+        [JsonPropertyName("rolId")]
         public int Rol { get; set; }
     }
 }

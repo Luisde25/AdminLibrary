@@ -1,9 +1,8 @@
-﻿using AdminLibrary.Controllers.Materials.request;
+﻿using AdminLibrary.Constants;
 using AdminLibrary.Controllers.RolesModel.request;
 using AdminLibrary.Dtos;
 using AdminLibrary.Models;
 using AdminLibrary.Models.Entities;
-using AdminLibrary.Models.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,8 +14,11 @@ namespace AdminLibrary.Controllers.RolesModel
          AppDbContext context
         ) : Controller
     {
+        #region Instancia para acceder a la base de datos
         private readonly AppDbContext _context = context;
-       
+        #endregion
+
+        #region Obtener lista de roles
         [HttpGet("GetRoles")]
         public async Task<List<RolesDto>> GetMaterials()
         {
@@ -28,13 +30,15 @@ namespace AdminLibrary.Controllers.RolesModel
             }
 
             return listMenus.Select(m => new RolesDto(
+                                        m.Id,
                                         m.Name,
                                         m.Description,
                                         m.Status
                                     )).ToList();
         }
+        #endregion
 
-
+        #region Creación de un nuevo rol
         [HttpPost("Create")]
         public async Task<ResponseDto> CreateRole(
             RoleControllerRequest roleControllerRequest
@@ -58,7 +62,7 @@ namespace AdminLibrary.Controllers.RolesModel
 
                 if (isExist != null)
                 {
-                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.exists);
+                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.existsRol);
 
                     response.Code = success?.Code ?? string.Empty;
                     response.Message = success?.Message;
@@ -94,12 +98,15 @@ namespace AdminLibrary.Controllers.RolesModel
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
                 response.Code = failed?.Code ?? string.Empty;
-                response.Message = failed?.Message;
+                response.Message = failed?.Message + ex.Message;    
 
             }
             return response;
         }
 
+        #endregion
+
+        #region Actual un rol existente
         [HttpPut("Update")]
         public async Task<ResponseDto> UpdateMaterial(
           RoleControllerRequestUpdate roleControllerRequest
@@ -108,7 +115,7 @@ namespace AdminLibrary.Controllers.RolesModel
             ResponseDto response = new();
             try
             {
-                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(Constants.utcNow, Constants.timeZoneInfo);
+                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(ConstantsApi.utcNow, ConstantsApi.timeZoneInfo);
 
                 var isExist = await _context.Roles.FirstOrDefaultAsync(x => x.Id == roleControllerRequest.Id);
 
@@ -118,7 +125,7 @@ namespace AdminLibrary.Controllers.RolesModel
                     isExist.Description = roleControllerRequest.Description;
                     isExist.Status = roleControllerRequest.status;
                     isExist.UpdateDate = localTime;
-                    isExist.UpdateUser = "User";
+                    isExist.UpdateUser = "Admin";
 
                     _context.Roles.Update(isExist);
                     var result = await _context.SaveChangesAsync();
@@ -146,12 +153,12 @@ namespace AdminLibrary.Controllers.RolesModel
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
                 response.Code = failed?.Code ?? string.Empty;
-                response.Message = failed?.Message;
+                response.Message = failed?.Message + ex.Message;
             }
 
             return response;
         }
-
+        #endregion
 
     }
 }

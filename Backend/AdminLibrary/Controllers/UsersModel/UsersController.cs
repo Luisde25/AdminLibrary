@@ -1,8 +1,8 @@
-﻿using AdminLibrary.Controllers.UsersModel.request;
+﻿using AdminLibrary.Constants;
+using AdminLibrary.Controllers.UsersModel.request;
 using AdminLibrary.Dtos;
 using AdminLibrary.Models;
 using AdminLibrary.Models.Entities;
-using AdminLibrary.Models.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,8 +14,11 @@ namespace AdminLibrary.Controllers.UsersModel
          AppDbContext context
         ) : Controller
     {
+        #region Instancia para acceder a la base de datos
         private readonly AppDbContext _context = context;
+        #endregion
 
+        #region Lista de usuarios que tienen un rol asignado
         [HttpGet("GetUsers")]
         public async Task<List<UsersDto>> GetUsers()
         {
@@ -29,6 +32,7 @@ namespace AdminLibrary.Controllers.UsersModel
             }
 
             var Users = listUsers.Select(m => new UsersDto(
+                                        m.Id,
                                         m.FirtsName,
                                         m.MiddleName,
                                         m.FirtsLastName,
@@ -44,7 +48,9 @@ namespace AdminLibrary.Controllers.UsersModel
 
             return Users.Where(x => !string.IsNullOrEmpty(x.RolName)).ToList();
         }
+        #endregion
 
+        #region Creación de un nuevo usuario
         [HttpPost("Create")]
         public async Task<ResponseDto> CreateUser(
            UserControllerRequest userControllerRequest
@@ -71,7 +77,7 @@ namespace AdminLibrary.Controllers.UsersModel
 
                 if (isExist != null)
                 {
-                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.exists);
+                    var success = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.existsUser);
 
                     response.Code = success?.Code ?? string.Empty;
                     response.Message = success?.Message;
@@ -128,12 +134,15 @@ namespace AdminLibrary.Controllers.UsersModel
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
                 response.Code = failed?.Code ?? string.Empty;
-                response.Message = failed?.Message;
+                response.Message = failed?.Message + ex.Message;
 
             }
             return response;
         }
 
+        #endregion
+
+        #region Actualizar usuario existe
         [HttpPut("Update")]
         public async Task<ResponseDto> UpdateUser(
           UserControllerUpdate userControllerUpdate
@@ -142,7 +151,7 @@ namespace AdminLibrary.Controllers.UsersModel
             ResponseDto response = new();
             try
             {
-                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(Constants.utcNow, Constants.timeZoneInfo);
+                DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(ConstantsApi.utcNow, ConstantsApi.timeZoneInfo);
 
                 var isExist = await _context.Users.FirstOrDefaultAsync(x => x.Id == userControllerUpdate.Id);
                 var roleEntities = await _context.UsersRoles.FirstOrDefaultAsync(x => x.IdRol == userControllerUpdate.Rol);
@@ -161,7 +170,7 @@ namespace AdminLibrary.Controllers.UsersModel
                     isExist.UserName = userControllerUpdate.UserName!;
                     roleEntities.IdRol = userControllerUpdate.Rol;
                     isExist.UpdateDate = localTime;
-                    isExist.UpdateUser = "User";
+                    isExist.UpdateUser = "Admin";
 
                     _context.Users.Update(isExist);
                     var result = await _context.SaveChangesAsync();
@@ -193,12 +202,14 @@ namespace AdminLibrary.Controllers.UsersModel
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
                 response.Code = failed?.Code ?? string.Empty;
-                response.Message = failed?.Message;
+                response.Message = failed?.Message + ex.Message;    
             }
 
             return response;
         }
+        #endregion 
 
+        #region Eliminar usuario existente
         [HttpDelete("Remove")]
         public async Task<ResponseDto> DeleteUser( int id
        )
@@ -241,10 +252,11 @@ namespace AdminLibrary.Controllers.UsersModel
             {
                 var failed = await _context.Response.FirstOrDefaultAsync(r => r.Code == Codes.failed);
                 response.Code = failed?.Code ?? string.Empty;
-                response.Message = failed?.Message;
+                response.Message = failed?.Message + ex.Message;
             }
 
             return response;
         }
+        #endregion
     }
 }
