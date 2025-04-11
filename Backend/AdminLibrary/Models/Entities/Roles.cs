@@ -24,6 +24,5 @@ namespace AdminLibrary.Models.Entities
         /// </summary>
         public virtual ICollection<UsersRoles> UsersRolesVirtual { get; set; } = null!;
 
-        public virtual ICollection<RolesMenus> MenusRolesVirtual { get; set; } = null!;
     }
 }

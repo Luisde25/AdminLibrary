@@ -9,7 +9,6 @@ namespace AdminLibrary.Models
     {
         public DbSet<MaterialsModel> Materials { get; set; }
         public DbSet<Roles> Roles { get; set; }
-        public DbSet<Menus> Menus { get; set; }
         public DbSet<Users> Users { get; set; }
         public DbSet<UsersRoles> UsersRoles { get; set; }
         public DbSet<MaterialsMovements> Movements { get; set; }
