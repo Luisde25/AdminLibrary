@@ -1,4 +1,6 @@
-﻿using AdminLibrary.Models.Shared;
+﻿using AdminLibrary.Dtos;
+using AdminLibrary.Shared;
+using Microsoft.EntityFrameworkCore;
 
 namespace AdminLibrary.Models.Entities
 {
@@ -24,6 +26,26 @@ namespace AdminLibrary.Models.Entities
         public DateTime? MovementDate { get; set; }
         public virtual MaterialsModel MaterialsVirtual { get; set; } = null!;
         public virtual Users UserVirtual { get; set; } = null!;
-        
+
+        public async Task<List<MovementsDto>> HistoryMovements(AppDbContext context)
+        {
+            var listMovements = await (from m in context.History
+                                       join u in context.Users on m.UserId equals u.Id
+                                       join mt in context.Materials on m.MaterialsId equals mt.Id
+                                       select new MovementsDto(
+                                           mt.Title,
+                                           u.UserName!,
+                                           m.Observations,
+                                           m.MovementType,
+                                           m.MovementDate
+                                       )).ToListAsync();
+
+            if (listMovements.Count == 0)
+            {
+                return [];
+            }
+
+            return listMovements;
+        }
     }
 }

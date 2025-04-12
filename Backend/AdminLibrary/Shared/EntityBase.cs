@@ -1,4 +1,4 @@
-﻿namespace AdminLibrary.Models.Shared
+﻿namespace AdminLibrary.Shared
 {
     public abstract class EntityBase<Tid> where Tid : unmanaged
     {

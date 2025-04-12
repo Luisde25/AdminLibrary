@@ -43,6 +43,7 @@
         public static readonly string DeleteSuccess = "ERR-VA-0015";
         public static readonly string existsUser = "ERR-VA-0016";
         public static readonly string existsRol = "ERR-VA-0017";
+        public static readonly string MateriaReturn = "ERR-VA-0018";
 
     }
 }

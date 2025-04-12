@@ -1,4 +1,4 @@
-﻿using AdminLibrary.Models.Shared;
+﻿using AdminLibrary.Shared;
 
 namespace AdminLibrary.Models.Entities
 {
